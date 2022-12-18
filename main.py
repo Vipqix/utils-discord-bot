@@ -23,7 +23,7 @@ tree = app_commands.CommandTree(client)
 async def ping(interaction: discord.Interaction):
     em = discord.Embed(title="Pong!", description=f"Latency: {round(client.latency * 1000)}ms")
     em.set_footer(text=f"Requested by {interaction.user}")
-    await interaction.response.send_message(embed=em)
+    await interaction.response.send_message(embed=em, ephemeral=True)
 
 @tree.command(name="roll", description="Rolls a dice")
 async def roll(interaction: discord.Interaction):
@@ -41,48 +41,59 @@ async def kick(interaction: discord.Interaction, user: discord.Member, reason: s
     await user.kick()
     if reason == None:
         try:
-            await interaction.response.send_message(f"{user} has been kicked!")
+            em = discord.Embed(title=f"kicked!", description=f"Kicked : {user}\nReason: {reason}")
+            await interaction.response.send_message(embed=em)
+            user.send(f"You have been kicked from {interaction.guild} from {interaction.user} for {reason}!")
         except Exception as e:
-            await interaction.response.send_message(f"error : ```{e}```")
+            await interaction.response.send_message(f"error : ```{e}```", ephemeral=True)
     else:
         try:
-            await interaction.response.send_message(f"{user} has been kicked for {reason}!")
+            em = discord.Embed(title=f"kicked!", description=f"Kicked : {user}\nReason: {reason}")
+            await interaction.response.send_message(embed=em)
+            user.send(f"You have been kicked from {interaction.guild} from {interaction.user} for {reason}!")
         except Exception as e:
-            await interaction.response.send_message(f"error : ```{e}```")
+            await interaction.response.send_message(f"error : ```{e}```", ephemeral=True)
 
 @tree.command(name='ban', description='Bans a member')
 async def ban(interaction: discord.Interaction, user: discord.Member, reason:str = None):
     await user.ban()
     if reason == None:
         try:
-            await interaction.response.send_message(f"{user} has been banned!")
+            em = discord.Embed(title=f"banned!", description=f"Banned : {user}")
+            await interaction.response.send_message(embed=em)
+            user.send(f"You have been banned from {interaction.guild} from {interaction.user} for {reason}!")
         except Exception as e:
-            await interaction.response.send_message(f"error : ```{e}```")
+            await interaction.response.send_message(f"error : ```{e}```", ephemeral=True)
     else:
         try:
-            await interaction.response.send_message(f"{user} has been banned for {reason}!")
+            em = discord.Embed(title=f"banned!", description=f"Banned :{user}\nReason: {reason}")
+            await interaction.response.send_message(embed=em)
+            user.send(f"You have been banned from {interaction.guild} from {interaction.user} for {reason}!")
         except Exception as e:
-            await interaction.response.send_message(f"error : ```{e}```")
+            await interaction.response.send_message(f"error : ```{e}```", ephemeral=True)
 
 @tree.command(name='unban', description='Unbans a member')
 async def unban(interaction: discord.Interaction, user: discord.User):
     await interaction.guild.unban(user)
     try:
-        await interaction.response.send_message(f"{user} has been unbanned!")
+        em = discord.Embed(title=f"unbanned!", description=f"Unbanned : {user}")
+        await interaction.response.send_message(embed=em, ephemeral=True)
     except Exception as e:
-        await interaction.response.send_message(f"error : ```{e}```")
+        await interaction.response.send_message(f"error : ```{e}```", ephemeral=True)
 
 @tree.command(name='mute', description='Mutes a member')
 async def mute(interaction: discord.Interaction, user: discord.Member, reason: str = None):
     await user.edit(mute=True)
     if reason == None:
         try:
-            await interaction.response.send_message(f"{user} has been muted!")
+            em = discord.Embed(title=f"muted!", description=f"Muted : {user}")
+            await interaction.response.send_message(embed=em, ephemeral=True)
         except Exception as e:
             await interaction.response.send_message(f"error : ```{e}```")
     else:
         try:
-            await interaction.response.send_message(f"{user} has been muted for {reason}!")
+            em = discord.Embed(title=f"muted!", description=f"Muted : {user}\nReason: {reason}")
+            await interaction.response.send_message(embed=em, ephemeral=True)
         except Exception as e:
             await interaction.response.send_message(f"error : ```{e}```")
 
@@ -90,55 +101,61 @@ async def mute(interaction: discord.Interaction, user: discord.Member, reason: s
 async def unmute(interaction: discord.Interaction, user: discord.Member):
     await user.edit(mute=False)
     try:
-        await interaction.response.send_message(f"{user} has been unmuted!")
+        em = discord.Embed(title=f"unmuted!", description=f"Unmuted : {user}")
+        await interaction.response.send_message(embed=em, ephemeral=True)
     except Exception as e:
         await interaction.response.send_message(f"error : ```{e}```")
 
 @tree.command(name='dm', description='DMs a member')
 async def dm(interaction: discord.Interaction, user: discord.Member,  message: str):
     try:
+        em = discord.Embed(title=f"DM sent!", description=f"Sent to : {user}\nMessage: ```{message}```")
         await user.send(message)
-        await interaction.response.send_message(f"Message sent to {user}")
     except Exception as e:
         await interaction.response.send_message(f"error : ```{e}```")
 
 @tree.command(name='clear', description='Clears messages')
 async def clear(interaction: discord.Interaction, amount: int):
     try:
-        await interaction.response.send_message(f"{amount} messages have been cleared!")
+        em = discord.Embed(title=f"cleared!", description=f"Cleared {amount} messages!")
+        await interaction.response.send_message(embed=em, ephemeral=True)
         await interaction.channel.purge(limit=amount)
     except Exception as e:
         await interaction.response.send_message(f"error : ```{e}```")
 
 @tree.command(name='slowmode', description='Sets slowmode')
 async def slowmode(interaction: discord.Interaction, seconds: int):
-    await interaction.channel.edit(slowmode_delay=seconds)
     try:
-        await interaction.response.send_message(f"Slowmode has been set to {seconds} seconds!")
+        em = discord.Embed(title=f"slowmode set!", description=f"Set slowmode to {seconds} seconds!")
+        await interaction.response.send_message(embed=em, ephemeral=False)
+        await interaction.channel.slowmode_delay(seconds)
     except Exception as e:
-        await interaction.response.send_message(f"error : ```{e}```")
+        await interaction.response.send_message(f"error : ```{e}```", ephemeral=True)
 
 @tree.command(name='remove_slowmode', description='Removes slowmode')
 async def remove_slowmode(interaction: discord.Interaction):
-    await interaction.channel.edit(slowmode_delay=0)
     try:
-        await interaction.response.send_message(f"Slowmode has been removed!")
+        em = discord.Embed(title=f"slowmode removed!", description=f"Removed slowmode!")
+        await interaction.response.send_message(embed=em, ephemeral=False)
+        await interaction.channel.slowmode_delay(0)
     except Exception as e:
         await interaction.response.send_message(f"error : ```{e}```")
 
 @tree.command(name='lock', description='Locks a channel')
 async def lock(interaction: discord.Interaction):
-    await interaction.channel.set_permissions(interaction.guild.default_role, send_messages=False)
     try:
-        await interaction.response.send_message(f"{interaction.channel} has been locked!")
+        em = discord.Embed(title=f"locked!", description=f"Locked {interaction.channel}!")
+        await interaction.response.send_message(embed=em, ephemeral=False)
+        await interaction.channel.set_permissions(interaction.guild.default_role, send_messages=False)
     except Exception as e:
         await interaction.response.send_message(f"error : ```{e}```")
 
 @tree.command(name='unlock', description='Unlocks a channel')
 async def unlock(interaction: discord.Interaction):
-    await interaction.channel.set_permissions(interaction.guild.default_role, send_messages=True)
     try:
-        await interaction.response.send_message(f"{interaction.channel} has been unlocked!")
+        em = discord.Embed(title=f"unlocked!", description=f"Unlocked {interaction.channel}!")
+        await interaction.response.send_message(embed=em, ephemeral=False)
+        await interaction.channel.set_permissions(interaction.guild.default_role, send_messages=True)
     except Exception as e:
         await interaction.response.send_message(f"error : ```{e}```")
 
@@ -150,44 +167,50 @@ async def support(interaction: discord.Interaction):
         interaction.author: discord.PermissionOverwrite(read_messages=True, send_messages=True)
     }
     channel = await interaction.guild.create_text_channel(f"ticket-{interaction.author.name}", category=category, overwrites=overwrites)
-    await channel.send(f"{interaction.author.mention} has created a ticket!")
+    em = discord.Embed(title=f"Ticket created!", description=f"Ticket created in {channel.mention}\nTo close the ticket, use /close")
+    await channel.send(embed=em)
     try:
-        await interaction.response.send_message(f"Ticket created in {channel.mention}")
+        em = discord.Embed(title=f"Ticket created!", description=f"Ticket created in {channel.mention}\nTo close the ticket, use /close")
+        await channel.send(embed=em)
     except Exception as e:
         await interaction.response.send_message(f"error : ```{e}```")
 
 @tree.command(name='close', description='closes a support ticket')
 async def close(interaction: discord.Interaction):
-    try:
-        await interaction.response.send_message(f"Ticket closes in 5 seconds!")
-        time.sleep(5)
-        await interaction.channel.delete()
-    except Exception as e:
-        await interaction.response.send_message(f"error : ```{e}```")
+    if interaction.check(interaction.channel.name.startswith("ticket-")):
+        try:
+            em = discord.Embed(title=f"Ticket closed!", description=f"closing : {interaction.channel.mention}\nDeleting in 5 seconds...")
+            await interaction.response.send_message(embed=em, ephemeral=False)
+            time.sleep(5)
+            await interaction.channel.delete()
+        except Exception as e:
+            await interaction.response.send_message(f"error : ```{e}```")
+    else:
+        await interaction.response.send_message("This is not a ticket channel!", ephemeral=True)
 
 @tree.command(name='help', description='Shows all commands')
 async def help(interaction: discord.Interaction):
     embed = discord.Embed(title="Help", description="All commands", color=0x00ff00)
-    embed.add_field(name="/ping", value="Shows the bot's latency", inline=False)
-    embed.add_field(name='/roll', value='Rolls a dice', inline=False)
-    embed.add_field(name='/joke', value='Tells a joke', inline=False)
-    embed.add_field(name="/ban", value="Bans a member", inline=False)
-    embed.add_field(name="/unban", value="Unbans a member", inline=False)
-    embed.add_field(name="/mute", value="Mutes a member", inline=False)
-    embed.add_field(name="/unmute", value="Unmutes a member", inline=False)
-    embed.add_field(name="/dm", value="DMs a member", inline=False)
-    embed.add_field(name="/clear", value="Clears messages", inline=False)
-    embed.add_field(name="/slowmode", value="Sets slowmode", inline=False)
-    embed.add_field(name="/remove_slowmode", value="Removes slowmode", inline=False)
-    embed.add_field(name="/lock", value="Locks a channel", inline=False)
-    embed.add_field(name="/unlock", value="Unlocks a channel", inline=False)
-    embed.add_field(name="/support", value="Makes a support ticket", inline=False)
-    embed.add_field(name="/close", value="Closes a support ticket", inline=False)
-    embed.add_field(name="/help", value="Shows all commands", inline=False)
+    embed.add_field(name="/ping", value="Shows the bot's latency", inline=True)
+    embed.add_field(name='/roll', value='Rolls a dice', inline=True)
+    embed.add_field(name='/joke', value='Tells a joke', inline=True)
+    embed.add_field(name="/ban", value="Bans a member", inline=True)
+    embed.add_field(name="/unban", value="Unbans a member", inline=True)
+    embed.add_field(name="/mute", value="Mutes a member", inline=True)
+    embed.add_field(name="/unmute", value="Unmutes a member", inline=True)
+    embed.add_field(name="/dm", value="DMs a member", inline=True)
+    embed.add_field(name="/clear", value="Clears messages", inline=True)
+    embed.add_field(name="/slowmode", value="Sets slowmode", inline=True)
+    embed.add_field(name="/remove_slowmode", value="Removes slowmode", inline=True)
+    embed.add_field(name="/lock", value="Locks a channel", inline=True)
+    embed.add_field(name="/unlock", value="Unlocks a channel", inline=True)
+    embed.add_field(name="/support", value="Makes a support ticket", inline=True)
+    embed.add_field(name="/close", value="Closes a support ticket", inline=True)
+    embed.add_field(name="/help", value="Shows all commands", inline=True)
     embed.set_author(name=f'reqested by {interaction.user}')
     await interaction.response.send_message(embed=embed)
 
     
-
-f = open('FPbottoken.txt', 'r')
+# create a text file called bottoken.txt and paste your bot token in it
+f = open('bottoken.txt', 'r')
 client.run(f.read())
