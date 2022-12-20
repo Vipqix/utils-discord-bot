@@ -4,6 +4,7 @@ import random
 import requests
 import time
 
+
 class aclient(discord.Client):
     def __init__(self):
         super().__init__(intents = discord.Intents.default())
@@ -16,8 +17,13 @@ class aclient(discord.Client):
             self.synced = True
         print(f"We have logged in as {self.user}.")
 
+# this is an server invite dont get confused and please change it to your server invite
+invite = "https://discord.gg/invite"
+
 client = aclient()
 tree = app_commands.CommandTree(client)
+
+# commands = 19
 
 @tree.command(name ="ping", description="Pong!")
 async def ping(interaction: discord.Interaction):
@@ -34,154 +40,193 @@ async def joke(interaction: discord.Interaction):
     joke = requests.get("https://official-joke-api.appspot.com/random_joke").json()
     em = discord.Embed(title=joke["setup"], description=joke["punchline"])
     em.set_footer(text=f"Requested by {interaction.user}")
-    await interaction.response.send_message(embed=em)
+    await interaction.response.send_message(embed=em, ephemeral=True)
 
 @tree.command(name='kick', description='Kicks a member')
 async def kick(interaction: discord.Interaction, user: discord.Member, reason: str = None):
-    await user.kick()
-    if reason == None:
-        try:
-            em = discord.Embed(title=f"kicked!", description=f"Kicked : {user}\nReason: {reason}")
-            await interaction.response.send_message(embed=em)
-            user.send(f"You have been kicked from {interaction.guild} from {interaction.user} for {reason}!")
-        except Exception as e:
-            await interaction.response.send_message(f"error : ```{e}```", ephemeral=True)
+    if interaction.user.guild_permissions.administrator == True:
+        if reason == None:
+            try:
+                em = discord.Embed(title=f"kicked!", description=f"Kicked : {user}\nReason: {reason}")
+                await interaction.response.send_message(embed=em)
+                emb = discord.Embed(title=f"Kicked!", description=f"You have been kicked from `{interaction.guild}`\nfrom `{interaction.user}!`\nNo reason was given.")
+                await user.send(embed=emb)
+                await user.kick()
+            except Exception as e:
+                await interaction.response.send_message(f"error : ```{e}```", ephemeral=True)
+        else:
+            try:
+                em = discord.Embed(title=f"kicked!", description=f"Kicked : {user}\nReason: {reason}")
+                await interaction.response.send_message(embed=em)
+                emb = discord.Embed(title=f"Kicked!", description=f"You have been kicked from `{interaction.guild}`\nfrom `{interaction.user}!`\nReason: {reason}")
+                await user.send(embed=emb)
+                await user.kick()
+            except Exception as e:
+                await interaction.response.send_message(f"error : ```{e}```", ephemeral=True)
     else:
-        try:
-            em = discord.Embed(title=f"kicked!", description=f"Kicked : {user}\nReason: {reason}")
-            await interaction.response.send_message(embed=em)
-            user.send(f"You have been kicked from {interaction.guild} from {interaction.user} for {reason}!")
-        except Exception as e:
-            await interaction.response.send_message(f"error : ```{e}```", ephemeral=True)
+        await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
 
 @tree.command(name='ban', description='Bans a member')
 async def ban(interaction: discord.Interaction, user: discord.Member, reason:str = None):
-    await user.ban()
-    if reason == None:
-        try:
-            em = discord.Embed(title=f"banned!", description=f"Banned : {user}")
-            await interaction.response.send_message(embed=em)
-            user.send(f"You have been banned from {interaction.guild} from {interaction.user} for {reason}!")
-        except Exception as e:
-            await interaction.response.send_message(f"error : ```{e}```", ephemeral=True)
+    if interaction.user.guild_permissions.administrator == True:
+        if reason == None:
+            try:
+                em = discord.Embed(title=f"banned!", description=f"Banned : {user}")
+                await interaction.response.send_message(embed=em)
+                await user.ban()
+                user.send(f"You have been banned from {interaction.guild} from {interaction.user} for {reason}!")
+            except Exception as e:
+                await interaction.response.send_message(f"error : ```{e}```", ephemeral=True)
+        else:
+            try:
+                em = discord.Embed(title=f"banned!", description=f"Banned :{user}\nReason: {reason}")
+                await interaction.response.send_message(embed=em)
+                user.send(f"You have been banned from {interaction.guild} from {interaction.user} for {reason}!")
+            except Exception as e:
+                await interaction.response.send_message(f"error : ```{e}```", ephemeral=True)
     else:
-        try:
-            em = discord.Embed(title=f"banned!", description=f"Banned :{user}\nReason: {reason}")
-            await interaction.response.send_message(embed=em)
-            user.send(f"You have been banned from {interaction.guild} from {interaction.user} for {reason}!")
-        except Exception as e:
-            await interaction.response.send_message(f"error : ```{e}```", ephemeral=True)
+        await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
 
 @tree.command(name='unban', description='Unbans a member')
 async def unban(interaction: discord.Interaction, user: discord.User):
-    await interaction.guild.unban(user)
-    try:
-        em = discord.Embed(title=f"unbanned!", description=f"Unbanned : {user}")
-        await interaction.response.send_message(embed=em, ephemeral=True)
-    except Exception as e:
-        await interaction.response.send_message(f"error : ```{e}```", ephemeral=True)
-
-@tree.command(name='mute', description='Mutes a member')
-async def mute(interaction: discord.Interaction, user: discord.Member, reason: str = None):
-    await user.edit(mute=True)
-    if reason == None:
+    if interaction.user.guild_permissions.administrator == True:
         try:
-            em = discord.Embed(title=f"muted!", description=f"Muted : {user}")
+            em = discord.Embed(title=f"unbanned!", description=f"Unbanned : {user}")
             await interaction.response.send_message(embed=em, ephemeral=True)
+            await interaction.guild.unban(user)
+            await user.send(f"You have been unbanned from (server) {interaction.guild} from (user) {interaction.user}, here is an invite to the server {invite}")
+        except Exception as e:
+            await interaction.response.send_message(f"error : ```{e}```", ephemeral=True)
+    else:
+        await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
+
+@tree.command(name='voice_mute', description='Mutes a member')
+async def mute(interaction: discord.Interaction, user: discord.Member, reason: str = None):
+    if interaction.user.guild_permissions.administrator == True:
+        if reason == None:
+            try:
+                await user.edit(mute=True)
+                em = discord.Embed(title=f"muted!", description=f"Muted : {user}")
+                await interaction.response.send_message(embed=em, ephemeral=True)
+            except Exception as e:
+                await interaction.response.send_message(f"error : ```{e}```")
+        else:
+            try:
+                em = discord.Embed(title=f"unmuted!", description=f"Unmuted : {user}\nReason: {reason}")
+                await interaction.response.send_message(embed=em, ephemeral=True)
+                await user.edit(mute=False)
+            except Exception as e:
+                await interaction.response.send_message(f"error : ```{e}```")
+    else:
+        await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
+
+@tree.command(name='voice_unmute', description='Unmutes a member')
+async def unmute(interaction: discord.Interaction, user: discord.Member):
+    if interaction.user.guild_permissions.administrator == True:
+        try:
+            em = discord.Embed(title=f"unmuted!", description=f"Unmuted : {user}")
+            await interaction.response.send_message(embed=em, ephemeral=True)
+            await user.edit(mute=False)
         except Exception as e:
             await interaction.response.send_message(f"error : ```{e}```")
     else:
-        try:
-            em = discord.Embed(title=f"muted!", description=f"Muted : {user}\nReason: {reason}")
-            await interaction.response.send_message(embed=em, ephemeral=True)
-        except Exception as e:
-            await interaction.response.send_message(f"error : ```{e}```")
-
-@tree.command(name='unmute', description='Unmutes a member')
-async def unmute(interaction: discord.Interaction, user: discord.Member):
-    await user.edit(mute=False)
-    try:
-        em = discord.Embed(title=f"unmuted!", description=f"Unmuted : {user}")
-        await interaction.response.send_message(embed=em, ephemeral=True)
-    except Exception as e:
-        await interaction.response.send_message(f"error : ```{e}```")
+        await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
 
 @tree.command(name='dm', description='DMs a member')
 async def dm(interaction: discord.Interaction, user: discord.Member,  message: str):
-    try:
-        em = discord.Embed(title=f"DM sent!", description=f"Sent to : {user}\nMessage: ```{message}```")
-        await user.send(message)
-    except Exception as e:
-        await interaction.response.send_message(f"error : ```{e}```")
+    if interaction.user.guild_permissions.administrator == True:
+        try:
+            em = discord.Embed(title=f"DM sent!", description=f"Sent to : {user}\nMessage: ```{message}```")
+            await interaction.response.send_message(embed=em, ephemeral=True)
+            await user.send(message)
+        except Exception as e:
+            await interaction.response.send_message(f"error : ```{e}```")
+    else:
+        await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
 
 @tree.command(name='clear', description='Clears messages')
 async def clear(interaction: discord.Interaction, amount: int):
-    try:
-        em = discord.Embed(title=f"cleared!", description=f"Cleared {amount} messages!")
-        await interaction.response.send_message(embed=em, ephemeral=True)
-        await interaction.channel.purge(limit=amount)
-    except Exception as e:
-        await interaction.response.send_message(f"error : ```{e}```")
+    if interaction.user.guild_permissions.administrator == True:
+        try:
+            em = discord.Embed(title=f"cleared!", description=f"Cleared {amount} messages!")
+            await interaction.response.send_message(embed=em, ephemeral=True)
+            await interaction.channel.purge(limit=amount)
+        except Exception as e:
+            await interaction.response.send_message(f"error : ```{e}```")
+    else:
+        await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
 
 @tree.command(name='slowmode', description='Sets slowmode')
 async def slowmode(interaction: discord.Interaction, seconds: int):
-    try:
-        em = discord.Embed(title=f"slowmode set!", description=f"Set slowmode to {seconds} seconds!")
-        await interaction.response.send_message(embed=em, ephemeral=False)
-        await interaction.channel.slowmode_delay(seconds)
-    except Exception as e:
-        await interaction.response.send_message(f"error : ```{e}```", ephemeral=True)
+    if interaction.user.guild_permissions.administrator == True:
+        try:
+            em = discord.Embed(title=f"slowmode set!", description=f"Set slowmode to {seconds} seconds!")
+            await interaction.response.send_message(embed=em, ephemeral=False)
+            await interaction.channel.edit(slowmode_delay=seconds)
+        except Exception as e:
+            await interaction.response.send_message(f"error : ```{e}```", ephemeral=True)
+    else:
+        await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
 
 @tree.command(name='remove_slowmode', description='Removes slowmode')
 async def remove_slowmode(interaction: discord.Interaction):
-    try:
-        em = discord.Embed(title=f"slowmode removed!", description=f"Removed slowmode!")
-        await interaction.response.send_message(embed=em, ephemeral=False)
-        await interaction.channel.slowmode_delay(0)
-    except Exception as e:
-        await interaction.response.send_message(f"error : ```{e}```")
+    if interaction.user.guild_permissions.administrator == True:
+        try:
+            em = discord.Embed(title=f"slowmode removed!", description=f"Removed slowmode!")
+            await interaction.response.send_message(embed=em, ephemeral=False)
+            await interaction.channel.edit(slowmode_delay=0)
+        except Exception as e:
+            await interaction.response.send_message(f"error : ```{e}```")
+    else:
+        await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
 
 @tree.command(name='lock', description='Locks a channel')
 async def lock(interaction: discord.Interaction):
-    try:
-        em = discord.Embed(title=f"locked!", description=f"Locked {interaction.channel}!")
-        await interaction.response.send_message(embed=em, ephemeral=False)
-        await interaction.channel.set_permissions(interaction.guild.default_role, send_messages=False)
-    except Exception as e:
-        await interaction.response.send_message(f"error : ```{e}```")
+    if interaction.user.guild_permissions.administrator == True:
+        try:
+            em = discord.Embed(title=f"locked!", description=f"Locked {interaction.channel}!")
+            await interaction.response.send_message(embed=em, ephemeral=False)
+            await interaction.channel.set_permissions(interaction.guild.default_role, send_messages=False)
+        except Exception as e:
+            await interaction.response.send_message(f"error : ```{e}```")
+    else:
+        await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
 
 @tree.command(name='unlock', description='Unlocks a channel')
 async def unlock(interaction: discord.Interaction):
-    try:
-        em = discord.Embed(title=f"unlocked!", description=f"Unlocked {interaction.channel}!")
-        await interaction.response.send_message(embed=em, ephemeral=False)
-        await interaction.channel.set_permissions(interaction.guild.default_role, send_messages=True)
-    except Exception as e:
-        await interaction.response.send_message(f"error : ```{e}```")
+    if interaction.user.guild_permissions.administrator == True:
+        try:
+            em = discord.Embed(title=f"unlocked!", description=f"Unlocked {interaction.channel}!")
+            await interaction.response.send_message(embed=em, ephemeral=False)
+            await interaction.channel.set_permissions(interaction.guild.default_role, send_messages=True)
+        except Exception as e:
+            await interaction.response.send_message(f"error : ```{e}```")
+    else:
+        await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
 
 @tree.command(name='support', description='makes a support ticket')
 async def support(interaction: discord.Interaction):
     category = discord.utils.get(interaction.guild.categories, name="Tickets")
     overwrites = {
         interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
-        interaction.author: discord.PermissionOverwrite(read_messages=True, send_messages=True)
+        interaction.user: discord.PermissionOverwrite(read_messages=True, send_messages=True)
     }
-    channel = await interaction.guild.create_text_channel(f"ticket-{interaction.author.name}", category=category, overwrites=overwrites)
-    em = discord.Embed(title=f"Ticket created!", description=f"Ticket created in {channel.mention}\nTo close the ticket, use /close")
-    await channel.send(embed=em)
     try:
+        channel = interaction.guild.create_text_channel(f"ticket-{interaction.user.name}", category=category, overwrites=overwrites)
+        await channel
         em = discord.Embed(title=f"Ticket created!", description=f"Ticket created in {channel.mention}\nTo close the ticket, use /close")
         await channel.send(embed=em)
     except Exception as e:
         await interaction.response.send_message(f"error : ```{e}```")
 
 @tree.command(name='close', description='closes a support ticket')
-async def close(interaction: discord.Interaction):
-    if interaction.check(interaction.channel.name.startswith("ticket-")):
+async def close(interaction: discord.Interaction, reason: str):
+    if interaction.channel.name.startswith("ticket-"):
         try:
             em = discord.Embed(title=f"Ticket closed!", description=f"closing : {interaction.channel.mention}\nDeleting in 5 seconds...")
             await interaction.response.send_message(embed=em, ephemeral=False)
             time.sleep(5)
+            await discord.Member.send(interaction.user, f"Your ticket has been closed for the reason: {reason}")
             await interaction.channel.delete()
         except Exception as e:
             await interaction.response.send_message(f"error : ```{e}```")
@@ -210,7 +255,25 @@ async def help(interaction: discord.Interaction):
     embed.set_author(name=f'reqested by {interaction.user}')
     await interaction.response.send_message(embed=embed)
 
+@tree.command(name='dmspam', description='DM spams a member')
+async def dmspam(interaction: discord.Interaction, member: discord.Member, message: str, amount: int, delay: str):
+    if interaction.user.guild_permissions.administrator == True:
+        try:
+            em = discord.Embed(title=f"DM spam sent!", description=f"Sent `{amount}` messages to `{member.mention}`")
+            await interaction.response.send_message(embed=em, ephemeral=False)
+            for x in range(amount):
+                await member.send(message)
+                time.sleep(delay)
+        except Exception as e:
+            await interaction.response.send_message(f"error : ```{e}```")
+    else:
+        await interaction.response.send_message("You do not have permission to use this command!", ephemeral=True)
     
+@tree.command(name='test', description='test')
+async def test(interaction: discord.Interaction, member : discord.Member):
+    await interaction.response.send_message(f"test : {member.mention}")
+    
+
 # create a text file called bottoken.txt and paste your bot token in it
 f = open('bottoken.txt', 'r')
 client.run(f.read())
