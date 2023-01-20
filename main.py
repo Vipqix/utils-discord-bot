@@ -15,13 +15,13 @@ class aclient(discord.Client):
         if not self.synced:
             await tree.sync() 
             self.synced = True
-        print(f"We have logged in as {self.user}.")
-
-# this is an server invite dont get confused and please change it to your server invite
-invite = "https://discord.gg/invite"
+        print(f"logged in as {self.user}.")
 
 client = aclient()
 tree = app_commands.CommandTree(client)
+
+# this is an server invite dont get confused and please change it to your server invite
+invite = "https://discord.gg/invite"
 
 # commands = 19
 
